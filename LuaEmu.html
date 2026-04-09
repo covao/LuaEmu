@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-wi([github.com](https://github.com/fengari-lua/fengari-interop))n  <title>LuaEmu</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='44'%3E%F0%9F%8C%9B%3C/text%3E%3C/svg%3E" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LuaEmu</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌛</text></svg>" />
   <style>
     :root {
       --text: #e5eefc;
@@ -15,24 +16,36 @@
       --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --glass-bg: rgba(18, 26, 49, 0.82);
+      --glass-border: rgba(142, 161, 201, 0.14);
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --radius-sm: 14px;
     }
 
     * { box-sizing: border-box; }
     html, body {
       margin: 0;
-      min-height: 100%;
+      height: 100%;
       background:
         radial-gradient(circle at top, rgba(125, 211, 252, 0.08), transparent 28%),
         linear-gradient(180deg, #08101f 0%, #0b1020 100%);
       color: var(--text);
       font-family: var(--sans);
     }
-    body { padding: 24px; }
+    body { 
+      padding: 20px; 
+      display: flex;
+      flex-direction: column;
+    }
     .app {
-      width: min(1240px, 100%);
+      width: min(1400px, 100%);
       margin: 0 auto;
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
+      flex: 1;
+      min-height: 0;
     }
     .header {
       display: flex;
@@ -40,12 +53,13 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      background: rgba(18, 26, 49, 0.78);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(142, 161, 201, 0.15);
-      border-radius: 20px;
-      padding: 18px 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
       box-shadow: var(--shadow);
+      flex-shrink: 0;
     }
     .brand {
       display: flex;
@@ -54,118 +68,183 @@
       min-width: 0;
     }
     .brand-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
       display: grid;
       place-items: center;
-      font-size: 1.8rem;
-      background: linear-gradient(180deg, rgba(125, 211, 252, 0.16), rgba(125, 211, 252, 0.06));
-      border: 1px solid rgba(125, 211, 252, 0.18);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      font-size: 1.6rem;
+      background: linear-gradient(180deg, rgba(125, 211, 252, 0.18), rgba(125, 211, 252, 0.06));
+      border: 1px solid rgba(125, 211, 252, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px rgba(0,0,0,0.2);
       flex: 0 0 auto;
     }
-    .title-wrap { display: grid; gap: 4px; min-width: 0; }
+    .title-wrap { display: grid; gap: 2px; min-width: 0; }
     h1 {
       margin: 0;
-      font-size: clamp(1.35rem, 2.6vw, 2rem);
+      font-size: clamp(1.3rem, 2.4vw, 1.8rem);
       line-height: 1.1;
+      background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .subtitle {
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       margin: 0;
     }
     .status {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 12px;
+      padding: 8px 14px;
       border-radius: 999px;
       background: rgba(125, 211, 252, 0.08);
       border: 1px solid rgba(125, 211, 252, 0.18);
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       color: var(--muted);
       white-space: nowrap;
+      transition: all 0.3s ease;
     }
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 999px;
       background: var(--warning);
-      box-shadow: 0 0 12px rgba(252, 211, 77, 0.45);
+      box-shadow: 0 0 10px rgba(252, 211, 77, 0.5);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
     .status.ready .dot {
       background: #4ade80;
-      box-shadow: 0 0 12px rgba(74, 222, 128, 0.55);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+      animation: none;
     }
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
+      grid-template-columns: 1fr auto;
       gap: 16px;
-      align-items: start;
+      flex: 1;
+      min-height: 0;
     }
     .card {
-      background: rgba(18, 26, 49, 0.82);
-      border: 1px solid rgba(142, 161, 201, 0.14);
-      border-radius: 24px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
       box-shadow: var(--shadow);
       overflow: hidden;
       min-width: 0;
     }
     .terminal-shell {
-      min-height: 76vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
     .terminal-head {
-      padding: 14px 18px;
+      padding: 12px 18px;
       border-bottom: 1px solid rgba(142, 161, 201, 0.12);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
+      flex-shrink: 0;
     }
     .terminal-title {
       font-family: var(--mono);
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+    .window-dots {
+      display: flex;
+      gap: 6px;
+      margin-right: 8px;
+    }
+    .window-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .window-dots span:nth-child(1) { background: #ff5f57; }
+    .window-dots span:nth-child(2) { background: #febc2e; }
+    .window-dots span:nth-child(3) { background: #28c840; }
     .terminal-meta {
       color: var(--muted);
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       text-align: right;
+      opacity: 0.8;
+    }
+    .terminal-wrapper {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
     .terminal {
+      flex: 1;
       padding: 18px;
       font-family: var(--mono);
-      font-size: 0.96rem;
-      line-height: 1.6;
+      font-size: 0.92rem;
+      line-height: 1.65;
       background:
-        linear-gradient(180deg, rgba(9, 14, 29, 0.92), rgba(7, 12, 24, 0.99)),
-        radial-gradient(circle at top, rgba(125, 211, 252, 0.05), transparent 35%);
-      overflow: auto;
+        linear-gradient(180deg, rgba(9, 14, 29, 0.95), rgba(7, 12, 24, 0.99)),
+        radial-gradient(circle at top, rgba(125, 211, 252, 0.04), transparent 35%);
+      overflow-y: auto;
+      overflow-x: hidden;
       word-break: break-word;
       cursor: text;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(125, 211, 252, 0.3) transparent;
     }
-    .output { display: grid; gap: 2px; }
+    .terminal::-webkit-scrollbar {
+      width: 8px;
+    }
+    .terminal::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .terminal::-webkit-scrollbar-thumb {
+      background: rgba(125, 211, 252, 0.25);
+      border-radius: 4px;
+    }
+    .terminal::-webkit-scrollbar-thumb:hover {
+      background: rgba(125, 211, 252, 0.4);
+    }
+    .output { display: grid; gap: 1px; }
     .line { white-space: pre-wrap; }
     .line.system { color: var(--muted); }
     .line.prompt { color: var(--accent); }
     .line.result { color: var(--accent-2); }
     .line.error { color: var(--danger); }
+    .line.ascii { 
+      color: var(--accent); 
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      line-height: 1.2;
+      white-space: pre;
+      letter-spacing: 0;
+    }
     .input-row {
       display: grid;
       grid-template-columns: auto 1fr;
       align-items: start;
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(142, 161, 201, 0.08);
     }
     .prompt-symbol {
       color: var(--accent);
       user-select: none;
       padding-top: 1px;
+      font-weight: 600;
     }
     .editor {
       min-height: 1.5em;
@@ -176,87 +255,236 @@
     }
     .editor:empty::before {
       content: attr(data-placeholder);
-      color: rgba(142, 161, 201, 0.75);
+      color: rgba(142, 161, 201, 0.6);
     }
     .terminal-foot {
       border-top: 1px solid rgba(142, 161, 201, 0.12);
-      padding: 12px 18px 14px;
+      padding: 10px 18px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.84rem;
       display: flex;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.15);
+    }
+
+    /* Side panel styles */
+    .side-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+    }
+    .side-toggle-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 44px;
+      height: 44px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    .side-toggle-btn:hover {
+      background: rgba(125, 211, 252, 0.15);
+      border-color: rgba(125, 211, 252, 0.3);
+      color: var(--accent);
+    }
+    .hamburger {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 18px;
+    }
+    .hamburger span {
+      display: block;
+      height: 2px;
+      background: currentColor;
+      border-radius: 1px;
+      transition: all 0.2s ease;
+    }
+    .side-container.collapsed .hamburger span:nth-child(1) {
+      transform: rotate(45deg) translate(4px, 4px);
+    }
+    .side-container.collapsed .hamburger span:nth-child(2) {
+      opacity: 0;
+    }
+    .side-container.collapsed .hamburger span:nth-child(3) {
+      transform: rotate(-45deg) translate(4px, -4px);
+    }
+    .side-panel {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      transition: width 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+    }
+    .side-container.collapsed .side-panel {
+      width: 0;
+      opacity: 0;
+      transform: translateX(20px);
+      overflow: hidden;
     }
     .side {
-      padding: 18px;
-      display: grid;
+      flex: 1;
+      min-height: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
-      align-content: start;
-      max-height: 76vh;
-      overflow: auto;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(125, 211, 252, 0.3) transparent;
     }
-    .panel {
-      background: rgba(11, 16, 32, 0.55);
-      border: 1px solid rgba(142, 161, 201, 0.12);
-      border-radius: 18px;
-      padding: 14px;
-      display: grid;
-      gap: 12px;
+    .side::-webkit-scrollbar {
+      width: 6px;
     }
-    .panel h2 { margin: 0; font-size: 1rem; }
-    .panel p, .panel li {
+    .side::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .side::-webkit-scrollbar-thumb {
+      background: rgba(125, 211, 252, 0.25);
+      border-radius: 3px;
+    }
+    .side-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(142, 161, 201, 0.12);
+    }
+    .side-header h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    /* Section styles (flat, no accordion) */
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
       color: var(--muted);
-      line-height: 1.6;
-      font-size: 0.93rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       margin: 0;
     }
-    .panel ul { margin: 0; padding-left: 18px; }
-    .snippet-list { display: grid; gap: 10px; }
+    .section-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .section p, .section li {
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.85rem;
+      margin: 0;
+    }
+    .section ul { 
+      margin: 0; 
+      padding-left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .snippet-list { 
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
     .snippet {
       appearance: none;
       width: 100%;
       text-align: left;
-      border: 1px solid rgba(142, 161, 201, 0.16);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 12px;
+      border: 1px solid rgba(142, 161, 201, 0.12);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px 12px;
       cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+      transition: all 0.15s ease;
       color: var(--text);
       font: inherit;
     }
     .snippet:hover {
-      transform: translateY(-1px);
-      border-color: rgba(125, 211, 252, 0.36);
+      transform: translateX(2px);
+      border-color: rgba(125, 211, 252, 0.4);
       background: rgba(125, 211, 252, 0.08);
+    }
+    .snippet:active {
+      transform: translateX(0);
     }
     .snippet-title {
       display: block;
-      font-size: 0.92rem;
-      font-weight: 700;
-      margin-bottom: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 3px;
     }
     .snippet-code {
       display: block;
       font-family: var(--mono);
-      font-size: 0.88rem;
+      font-size: 0.78rem;
       white-space: pre-wrap;
       color: var(--muted);
+      max-height: 40px;
+      overflow: hidden;
     }
     code, .kbd {
       font-family: var(--mono);
       color: var(--text);
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(142, 161, 201, 0.12);
-      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(142, 161, 201, 0.15);
+      border-radius: 6px;
       padding: 2px 6px;
+      font-size: 0.85em;
     }
     .muted { color: var(--muted); }
+    .divider {
+      height: 1px;
+      background: rgba(142, 161, 201, 0.1);
+      margin: 4px 0;
+    }
+
     @media (max-width: 1024px) {
+      body { padding: 12px; }
       .layout { grid-template-columns: 1fr; }
-      .terminal-shell { min-height: 62vh; }
-      .side { max-height: none; }
+      .side-container { 
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        bottom: 12px;
+        z-index: 100;
+      }
+      .side-panel {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+      }
+      .side-container.collapsed .side-toggle-btn {
+        position: relative;
+      }
+      .terminal-shell { min-height: 70vh; }
+    }
+    @media (max-width: 640px) {
+      .header { padding: 12px 14px; }
+      .brand-icon { width: 40px; height: 40px; font-size: 1.3rem; }
+      .terminal-meta { display: none; }
+      .terminal-foot { flex-direction: column; gap: 6px; }
+      .side-panel { width: 280px; }
     }
   </style>
 </head>
@@ -267,7 +495,7 @@
         <div class="brand-icon" aria-hidden="true">🌛</div>
         <div class="title-wrap">
           <h1>LuaEmu</h1>
-          <p class="subtitle">Single-file browser Lua terminal for learning and quick experiments.</p>
+          <p class="subtitle">Browser Lua terminal for learning and experiments</p>
         </div>
       </div>
       <div id="status" class="status" aria-live="polite">
@@ -279,132 +507,145 @@
     <section class="layout">
       <main class="card terminal-shell">
         <div class="terminal-head">
-          <div class="terminal-title">terminal</div>
-          <div class="terminal-meta">Enter: run · Shift+Enter: newline · Up/Down: history</div>
+          <div class="terminal-title">
+            <div class="window-dots">
+              <span></span><span></span><span></span>
+            </div>
+            terminal
+          </div>
+          <div class="terminal-meta">Enter: run · Shift+Enter: newline · ↑↓: history</div>
         </div>
 
-        <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Lua terminal">
-          <div id="output" class="output"></div>
-          <div class="input-row">
-            <div class="prompt-symbol">&gt;</div>
-            <div id="editor" class="editor" contenteditable="true" spellcheck="false" data-placeholder="Type Lua code here. Try print(_VERSION) or click a sample on the right." aria-label="Lua input"></div>
+        <div class="terminal-wrapper">
+          <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Lua terminal">
+            <div id="output" class="output"></div>
+            <div class="input-row">
+              <div class="prompt-symbol">❯</div>
+              <div id="editor" class="editor" contenteditable="true" spellcheck="false" data-placeholder="Type Lua code here..." aria-label="Lua input"></div>
+            </div>
           </div>
         </div>
 
         <div class="terminal-foot">
-          <div>Local commands: <code>:help</code> <code>:clear</code> <code>:about</code></div>
-          <div>Click a sample on the right to insert it into the prompt.</div>
+          <div>Commands: <code>:help</code> <code>:clear</code> <code>:about</code></div>
+          <div class="muted">Click samples to insert code</div>
         </div>
       </main>
 
-      <aside class="card side">
-        <section class="panel">
-          <h2>Getting started</h2>
-          <ul>
-            <li>Type Lua code directly in the terminal.</li>
-            <li>Press <span class="kbd">Enter</span> to run the current input.</li>
-            <li>Press <span class="kbd">Shift</span> + <span class="kbd">Enter</span> to insert a new line.</li>
-            <li>Use <span class="kbd">↑</span> and <span class="kbd">↓</span> for command history.</li>
-            <li>Click any item below to copy it into the terminal input.</li>
-          </ul>
-        </section>
-
-        <section class="panel">
-          <h2>Local commands</h2>
-          <div class="snippet-list">
-            <button class="snippet" type="button" data-code=":help">
-              <span class="snippet-title">Show help</span>
-              <span class="snippet-code">:help</span>
-            </button>
-            <button class="snippet" type="button" data-code=":clear">
-              <span class="snippet-title">Clear terminal</span>
-              <span class="snippet-code">:clear</span>
-            </button>
-            <button class="snippet" type="button" data-code=":about">
-              <span class="snippet-title">Show runtime info</span>
-              <span class="snippet-code">:about</span>
-            </button>
+      <div class="side-container" id="sideContainer">
+        <button class="side-toggle-btn" id="sideToggle" title="Toggle panel">
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
-        </section>
+        </button>
+        
+        <div class="side-panel card">
+          <aside class="side">
+            <div class="side-header">
+              <h2>📚 Commands & Samples</h2>
+            </div>
 
-        <section class="panel">
-          <h2>Lua quick commands</h2>
-          <div class="snippet-list">
-            <button class="snippet" type="button" data-code="print(_VERSION)">
-              <span class="snippet-title">Check Lua version</span>
-              <span class="snippet-code">print(_VERSION)</span>
-            </button>
-            <button class="snippet" type="button" data-code="print(1 + 2 * 3)">
-              <span class="snippet-title">Simple math</span>
-              <span class="snippet-code">print(1 + 2 * 3)</span>
-            </button>
-            <button class="snippet" type="button" data-code="name = 'LuaEmu'&#10;print('Hello, ' .. name)">
-              <span class="snippet-title">Variables and strings</span>
-              <span class="snippet-code">name = 'LuaEmu'
+            <div class="section">
+              <h3 class="section-title">Getting Started</h3>
+              <div class="section-content">
+                <ul>
+                  <li>Type Lua code in the terminal</li>
+                  <li><span class="kbd">Enter</span> to run</li>
+                  <li><span class="kbd">Shift+Enter</span> for new line</li>
+                  <li><span class="kbd">↑</span> <span class="kbd">↓</span> for history</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section">
+              <h3 class="section-title">Local Commands</h3>
+              <div class="section-content">
+                <div class="snippet-list">
+                  <button class="snippet" type="button" data-code=":help">
+                    <span class="snippet-title">Show help</span>
+                    <span class="snippet-code">:help</span>
+                  </button>
+                  <button class="snippet" type="button" data-code=":clear">
+                    <span class="snippet-title">Clear terminal</span>
+                    <span class="snippet-code">:clear</span>
+                  </button>
+                  <button class="snippet" type="button" data-code=":about">
+                    <span class="snippet-title">Runtime info</span>
+                    <span class="snippet-code">:about</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section">
+              <h3 class="section-title">Quick Commands</h3>
+              <div class="section-content">
+                <div class="snippet-list">
+                  <button class="snippet" type="button" data-code="print(_VERSION)">
+                    <span class="snippet-title">Lua version</span>
+                    <span class="snippet-code">print(_VERSION)</span>
+                  </button>
+                  <button class="snippet" type="button" data-code="print(1 + 2 * 3)">
+                    <span class="snippet-title">Simple math</span>
+                    <span class="snippet-code">print(1 + 2 * 3)</span>
+                  </button>
+                  <button class="snippet" type="button" data-code="name = 'LuaEmu'&#10;print('Hello, ' .. name)">
+                    <span class="snippet-title">Variables & strings</span>
+                    <span class="snippet-code">name = 'LuaEmu'
 print('Hello, ' .. name)</span>
-            </button>
-            <button class="snippet" type="button" data-code="for i = 1, 5 do&#10;  print(i)&#10;end">
-              <span class="snippet-title">For loop</span>
-              <span class="snippet-code">for i = 1, 5 do
-  print(i)
-end</span>
-            </button>
-            <button class="snippet" type="button" data-code="t = {10, 20, 30}&#10;for i, v in ipairs(t) do&#10;  print(i, v)&#10;end">
-              <span class="snippet-title">Table and ipairs</span>
-              <span class="snippet-code">t = {10, 20, 30}
-for i, v in ipairs(t) do
-  print(i, v)
-end</span>
-            </button>
-          </div>
-        </section>
+                  </button>
+                  <button class="snippet" type="button" data-code="for i = 1, 5 do&#10;  print(i)&#10;end">
+                    <span class="snippet-title">For loop</span>
+                    <span class="snippet-code">for i = 1, 5 do print(i) end</span>
+                  </button>
+                </div>
+              </div>
+            </div>
 
-        <section class="panel">
-          <h2>Code samples</h2>
-          <div class="snippet-list">
-            <button class="snippet" type="button" data-code="function square(x)&#10;  return x * x&#10;end&#10;&#10;print(square(8))">
-              <span class="snippet-title">Function</span>
-              <span class="snippet-code">function square(x)
-  return x * x
-end
+            <div class="divider"></div>
 
-print(square(8))</span>
-            </button>
-            <button class="snippet" type="button" data-code="function fib(n)&#10;  if n &lt; 2 then&#10;    return n&#10;  end&#10;  return fib(n - 1) + fib(n - 2)&#10;end&#10;&#10;print(fib(10))">
-              <span class="snippet-title">Recursion</span>
-              <span class="snippet-code">function fib(n)
-  if n &lt; 2 then
-    return n
-  end
-  return fib(n - 1) + fib(n - 2)
-end
+            <div class="section">
+              <h3 class="section-title">Code Samples</h3>
+              <div class="section-content">
+                <div class="snippet-list">
+                  <button class="snippet" type="button" data-code="function square(x)&#10;  return x * x&#10;end&#10;&#10;print(square(8))">
+                    <span class="snippet-title">Function</span>
+                    <span class="snippet-code">function square(x) return x * x end</span>
+                  </button>
+                  <button class="snippet" type="button" data-code="function fib(n)&#10;  if n &lt; 2 then&#10;    return n&#10;  end&#10;  return fib(n - 1) + fib(n - 2)&#10;end&#10;&#10;print(fib(10))">
+                    <span class="snippet-title">Recursion (Fibonacci)</span>
+                    <span class="snippet-code">function fib(n) ... end</span>
+                  </button>
+                  <button class="snippet" type="button" data-code="t = {10, 20, 30}&#10;for i, v in ipairs(t) do&#10;  print(i, v)&#10;end">
+                    <span class="snippet-title">Table & ipairs</span>
+                    <span class="snippet-code">for i, v in ipairs(t) do ...</span>
+                  </button>
+                  <button class="snippet" type="button" data-code="person = { name = 'Ada', role = 'Engineer' }&#10;print(person.name)&#10;print(person.role)">
+                    <span class="snippet-title">Table as object</span>
+                    <span class="snippet-code">person = { name = 'Ada', ... }</span>
+                  </button>
+                </div>
+              </div>
+            </div>
 
-print(fib(10))</span>
-            </button>
-            <button class="snippet" type="button" data-code="person = { name = 'Ada', role = 'Engineer' }&#10;print(person.name)&#10;print(person.role)">
-              <span class="snippet-title">Table as object</span>
-              <span class="snippet-code">person = { name = 'Ada', role = 'Engineer' }
-print(person.name)
-print(person.role)</span>
-            </button>
-            <button class="snippet" type="button" data-code="sum = 0&#10;for i = 1, 100 do&#10;  sum = sum + i&#10;end&#10;&#10;print(sum)">
-              <span class="snippet-title">Accumulator</span>
-              <span class="snippet-code">sum = 0
-for i = 1, 100 do
-  sum = sum + i
-end
+            <div class="divider"></div>
 
-print(sum)</span>
-            </button>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h2>Notes</h2>
-          <p>This page runs Lua in the browser. Native extensions and the full Node-only <code>io</code> library are not available here.</p>
-          <p class="muted">Tip: simple expressions such as <code>2 + 3</code> are automatically evaluated and printed.</p>
-        </section>
-      </aside>
+            <div class="section">
+              <h3 class="section-title">Notes</h3>
+              <div class="section-content">
+                <p>Runs Lua in browser. Native extensions and full <code>io</code> library unavailable.</p>
+                <p class="muted">Tip: expressions like <code>2 + 3</code> auto-evaluate.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -417,10 +658,24 @@ print(sum)</span>
       const statusEl = document.getElementById('status');
       const statusTextEl = document.getElementById('statusText');
       const snippetEls = document.querySelectorAll('.snippet');
+      const sideContainer = document.getElementById('sideContainer');
+      const sideToggle = document.getElementById('sideToggle');
 
       const history = [];
       let historyIndex = -1;
       let runtimeReady = false;
+
+      // ASCII art for LuaEmu (using simple box drawing characters)
+      const asciiArt = [
+        "╦  ╦ ╦╔═╗╔═╗╔╦╗╦ ╦",
+        "║  ║ ║╠═╣║╣ ║║║║ ║",
+        "╩═╝╚═╝╩ ╩╚═╝╩ ╩╚═╝"
+      ];
+
+      // Side panel toggle
+      sideToggle.addEventListener('click', () => {
+        sideContainer.classList.toggle('collapsed');
+      });
 
       function scrollToBottom() {
         requestAnimationFrame(() => {
@@ -440,6 +695,13 @@ print(sum)</span>
         line.textContent = String(text);
         outputEl.appendChild(line);
         scrollToBottom();
+      }
+
+      function addAsciiArt() {
+        asciiArt.forEach(line => {
+          addLine(line, 'line ascii');
+        });
+        addLine('', 'line');
       }
 
       function clearOutput() {
@@ -507,7 +769,7 @@ print(sum)</span>
       function printPromptBlock(source) {
         const lines = source.replace(/\s+$/g, '').split('\n');
         lines.forEach((line, index) => {
-          const prefix = index === 0 ? '> ' : '. ';
+          const prefix = index === 0 ? '❯ ' : '. ';
           addLine(prefix + line, 'line prompt');
         });
       }
@@ -523,15 +785,15 @@ print(sum)</span>
 
       function showHelp() {
         addLine('LuaEmu local commands:', 'line system');
-        addLine(':help   Show this help', 'line system');
-        addLine(':clear  Clear terminal output', 'line system');
-        addLine(':about  Show runtime information', 'line system');
+        addLine('  :help   Show this help', 'line system');
+        addLine('  :clear  Clear terminal output', 'line system');
+        addLine('  :about  Show runtime information', 'line system');
       }
 
       function showAbout() {
         addLine('LuaEmu browser runtime', 'line system');
-        addLine('Lua engine: Fengari (Lua 5.3 semantics)', 'line system');
-        addLine('State is preserved between commands in this session.', 'line system');
+        addLine('  Lua engine: Fengari (Lua 5.3 semantics)', 'line system');
+        addLine('  State is preserved between commands.', 'line system');
       }
 
       function handleLocalCommand(command) {
@@ -624,9 +886,11 @@ end
           addLine(text, 'line');
         };
         try {
-          addLine('LuaEmu ready.', 'line system');
-          addLine('Try print(_VERSION), 2 + 3, or click a sample on the right.', 'line system');
-          setStatus(true, 'Lua runtime ready');
+          addAsciiArt();
+          addLine('Welcome to LuaEmu! 🌛', 'line system');
+          addLine('Try: print(_VERSION), 2 + 3, or click a sample →', 'line system');
+          addLine('', 'line');
+          setStatus(true, 'Ready');
         } catch (error) {
           addLine('Initialization failed: ' + formatLuaError(error), 'line error');
           setStatus(false, 'Runtime initialization failed');
@@ -646,8 +910,8 @@ end
           }
           if (attempts >= maxAttempts) {
             clearInterval(timer);
-            addLine('Failed to load the Lua library. Check network access to the CDN.', 'line error');
-            setStatus(false, 'Lua library load failed');
+            addLine('Failed to load Lua library. Check network.', 'line error');
+            setStatus(false, 'Load failed');
           }
         }, 100);
       }
@@ -691,7 +955,7 @@ end
             await navigator.clipboard.writeText(code);
           } catch {
           }
-          addLine('Sample inserted into the prompt.', 'line system');
+          addLine('✓ Sample inserted', 'line system');
         });
       });
 
