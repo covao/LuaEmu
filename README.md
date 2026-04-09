@@ -1,5 +1,5 @@
 # LuaEmu
-![Demo Image](https://covao.github.io/LuaEmu/demo.gif)
+![Demo Image](./demo.gif)
 
 ## Overview
 LuaEmu is a single-file web terminal that runs Lua code in the browser with a beginner-friendly terminal UI.
