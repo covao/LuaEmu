@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-wi([github.com](https://github.com/fengari-lua/fengari-interop))n  <title>LuaEmu</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='44'%3E%F0%9F%8C%9B%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --text: #e5eefc;
+      --muted: #8ea1c9;
+      --accent: #7dd3fc;
+      --accent-2: #86efac;
+      --danger: #fca5a5;
+      --warning: #fcd34d;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top, rgba(125, 211, 252, 0.08), transparent 28%),
+        linear-gradient(180deg, #08101f 0%, #0b1020 100%);
+      color: var(--text);
+      font-family: var(--sans);
+    }
+    body { padding: 24px; }
+    .app {
+      width: min(1240px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .header {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      background: rgba(18, 26, 49, 0.78);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(142, 161, 201, 0.15);
+      border-radius: 20px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 1.8rem;
+      background: linear-gradient(180deg, rgba(125, 211, 252, 0.16), rgba(125, 211, 252, 0.06));
+      border: 1px solid rgba(125, 211, 252, 0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      flex: 0 0 auto;
+    }
+    .title-wrap { display: grid; gap: 4px; min-width: 0; }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.6vw, 2rem);
+      line-height: 1.1;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.08);
+      border: 1px solid rgba(125, 211, 252, 0.18);
+      font-size: 0.92rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--warning);
+      box-shadow: 0 0 12px rgba(252, 211, 77, 0.45);
+    }
+    .status.ready .dot {
+      background: #4ade80;
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.55);
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+    .card {
+      background: rgba(18, 26, 49, 0.82);
+      border: 1px solid rgba(142, 161, 201, 0.14);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-width: 0;
+    }
+    .terminal-shell {
+      min-height: 76vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .terminal-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(142, 161, 201, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+    }
+    .terminal-title {
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    .terminal-meta {
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: right;
+    }
+    .terminal {
+      padding: 18px;
+      font-family: var(--mono);
+      font-size: 0.96rem;
+      line-height: 1.6;
+      background:
+        linear-gradient(180deg, rgba(9, 14, 29, 0.92), rgba(7, 12, 24, 0.99)),
+        radial-gradient(circle at top, rgba(125, 211, 252, 0.05), transparent 35%);
+      overflow: auto;
+      word-break: break-word;
+      cursor: text;
+    }
+    .output { display: grid; gap: 2px; }
+    .line { white-space: pre-wrap; }
+    .line.system { color: var(--muted); }
+    .line.prompt { color: var(--accent); }
+    .line.result { color: var(--accent-2); }
+    .line.error { color: var(--danger); }
+    .input-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .prompt-symbol {
+      color: var(--accent);
+      user-select: none;
+      padding-top: 1px;
+    }
+    .editor {
+      min-height: 1.5em;
+      outline: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+      caret-color: var(--accent);
+    }
+    .editor:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(142, 161, 201, 0.75);
+    }
+    .terminal-foot {
+      border-top: 1px solid rgba(142, 161, 201, 0.12);
+      padding: 12px 18px 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .side {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      max-height: 76vh;
+      overflow: auto;
+    }
+    .panel {
+      background: rgba(11, 16, 32, 0.55);
+      border: 1px solid rgba(142, 161, 201, 0.12);
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .panel h2 { margin: 0; font-size: 1rem; }
+    .panel p, .panel li {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.93rem;
+      margin: 0;
+    }
+    .panel ul { margin: 0; padding-left: 18px; }
+    .snippet-list { display: grid; gap: 10px; }
+    .snippet {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(142, 161, 201, 0.16);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+      color: var(--text);
+      font: inherit;
+    }
+    .snippet:hover {
+      transform: translateY(-1px);
+      border-color: rgba(125, 211, 252, 0.36);
+      background: rgba(125, 211, 252, 0.08);
+    }
+    .snippet-title {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .snippet-code {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      white-space: pre-wrap;
+      color: var(--muted);
+    }
+    code, .kbd {
+      font-family: var(--mono);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(142, 161, 201, 0.12);
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+    .muted { color: var(--muted); }
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .terminal-shell { min-height: 62vh; }
+      .side { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">🌛</div>
+        <div class="title-wrap">
+          <h1>LuaEmu</h1>
+          <p class="subtitle">Single-file browser Lua terminal for learning and quick experiments.</p>
+        </div>
+      </div>
+      <div id="status" class="status" aria-live="polite">
+        <span class="dot"></span>
+        <span id="statusText">Loading Lua runtime...</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <main class="card terminal-shell">
+        <div class="terminal-head">
+          <div class="terminal-title">terminal</div>
+          <div class="terminal-meta">Enter: run · Shift+Enter: newline · Up/Down: history</div>
+        </div>
+
+        <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Lua terminal">
+          <div id="output" class="output"></div>
+          <div class="input-row">
+            <div class="prompt-symbol">&gt;</div>
+            <div id="editor" class="editor" contenteditable="true" spellcheck="false" data-placeholder="Type Lua code here. Try print(_VERSION) or click a sample on the right." aria-label="Lua input"></div>
+          </div>
+        </div>
+
+        <div class="terminal-foot">
+          <div>Local commands: <code>:help</code> <code>:clear</code> <code>:about</code></div>
+          <div>Click a sample on the right to insert it into the prompt.</div>
+        </div>
+      </main>
+
+      <aside class="card side">
+        <section class="panel">
+          <h2>Getting started</h2>
+          <ul>
+            <li>Type Lua code directly in the terminal.</li>
+            <li>Press <span class="kbd">Enter</span> to run the current input.</li>
+            <li>Press <span class="kbd">Shift</span> + <span class="kbd">Enter</span> to insert a new line.</li>
+            <li>Use <span class="kbd">↑</span> and <span class="kbd">↓</span> for command history.</li>
+            <li>Click any item below to copy it into the terminal input.</li>
+          </ul>
+        </section>
+
+        <section class="panel">
+          <h2>Local commands</h2>
+          <div class="snippet-list">
+            <button class="snippet" type="button" data-code=":help">
+              <span class="snippet-title">Show help</span>
+              <span class="snippet-code">:help</span>
+            </button>
+            <button class="snippet" type="button" data-code=":clear">
+              <span class="snippet-title">Clear terminal</span>
+              <span class="snippet-code">:clear</span>
+            </button>
+            <button class="snippet" type="button" data-code=":about">
+              <span class="snippet-title">Show runtime info</span>
+              <span class="snippet-code">:about</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Lua quick commands</h2>
+          <div class="snippet-list">
+            <button class="snippet" type="button" data-code="print(_VERSION)">
+              <span class="snippet-title">Check Lua version</span>
+              <span class="snippet-code">print(_VERSION)</span>
+            </button>
+            <button class="snippet" type="button" data-code="print(1 + 2 * 3)">
+              <span class="snippet-title">Simple math</span>
+              <span class="snippet-code">print(1 + 2 * 3)</span>
+            </button>
+            <button class="snippet" type="button" data-code="name = 'LuaEmu'&#10;print('Hello, ' .. name)">
+              <span class="snippet-title">Variables and strings</span>
+              <span class="snippet-code">name = 'LuaEmu'
+print('Hello, ' .. name)</span>
+            </button>
+            <button class="snippet" type="button" data-code="for i = 1, 5 do&#10;  print(i)&#10;end">
+              <span class="snippet-title">For loop</span>
+              <span class="snippet-code">for i = 1, 5 do
+  print(i)
+end</span>
+            </button>
+            <button class="snippet" type="button" data-code="t = {10, 20, 30}&#10;for i, v in ipairs(t) do&#10;  print(i, v)&#10;end">
+              <span class="snippet-title">Table and ipairs</span>
+              <span class="snippet-code">t = {10, 20, 30}
+for i, v in ipairs(t) do
+  print(i, v)
+end</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Code samples</h2>
+          <div class="snippet-list">
+            <button class="snippet" type="button" data-code="function square(x)&#10;  return x * x&#10;end&#10;&#10;print(square(8))">
+              <span class="snippet-title">Function</span>
+              <span class="snippet-code">function square(x)
+  return x * x
+end
+
+print(square(8))</span>
+            </button>
+            <button class="snippet" type="button" data-code="function fib(n)&#10;  if n &lt; 2 then&#10;    return n&#10;  end&#10;  return fib(n - 1) + fib(n - 2)&#10;end&#10;&#10;print(fib(10))">
+              <span class="snippet-title">Recursion</span>
+              <span class="snippet-code">function fib(n)
+  if n &lt; 2 then
+    return n
+  end
+  return fib(n - 1) + fib(n - 2)
+end
+
+print(fib(10))</span>
+            </button>
+            <button class="snippet" type="button" data-code="person = { name = 'Ada', role = 'Engineer' }&#10;print(person.name)&#10;print(person.role)">
+              <span class="snippet-title">Table as object</span>
+              <span class="snippet-code">person = { name = 'Ada', role = 'Engineer' }
+print(person.name)
+print(person.role)</span>
+            </button>
+            <button class="snippet" type="button" data-code="sum = 0&#10;for i = 1, 100 do&#10;  sum = sum + i&#10;end&#10;&#10;print(sum)">
+              <span class="snippet-title">Accumulator</span>
+              <span class="snippet-code">sum = 0
+for i = 1, 100 do
+  sum = sum + i
+end
+
+print(sum)</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Notes</h2>
+          <p>This page runs Lua in the browser. Native extensions and the full Node-only <code>io</code> library are not available here.</p>
+          <p class="muted">Tip: simple expressions such as <code>2 + 3</code> are automatically evaluated and printed.</p>
+        </section>
+      </aside>
+    </section>
+  </div>
+
+  <script defer src="https://unpkg.com/fengari-web/dist/fengari-web.js"></script>
+  <script>
+    (() => {
+      const terminalEl = document.getElementById('terminal');
+      const outputEl = document.getElementById('output');
+      const editorEl = document.getElementById('editor');
+      const statusEl = document.getElementById('status');
+      const statusTextEl = document.getElementById('statusText');
+      const snippetEls = document.querySelectorAll('.snippet');
+
+      const history = [];
+      let historyIndex = -1;
+      let runtimeReady = false;
+
+      function scrollToBottom() {
+        requestAnimationFrame(() => {
+          terminalEl.scrollTop = terminalEl.scrollHeight;
+        });
+      }
+
+      function setStatus(ready, text) {
+        runtimeReady = ready;
+        statusTextEl.textContent = text;
+        statusEl.classList.toggle('ready', ready);
+      }
+
+      function addLine(text = '', className = 'line') {
+        const line = document.createElement('div');
+        line.className = className;
+        line.textContent = String(text);
+        outputEl.appendChild(line);
+        scrollToBottom();
+      }
+
+      function clearOutput() {
+        outputEl.innerHTML = '';
+        scrollToBottom();
+      }
+
+      function stringifyValue(value) {
+        if (value === undefined) return null;
+        if (value === null) return 'nil';
+        if (Array.isArray(value)) return value.map((item) => stringifyValue(item) ?? 'nil').join('\t');
+        if (typeof value === 'object') {
+          try {
+            return JSON.stringify(value);
+          } catch {
+            return String(value);
+          }
+        }
+        return String(value);
+      }
+
+      function formatLuaError(error) {
+        if (!error) return 'Unknown error';
+        return String(error.message || error).replace(/^uncaught exception\s*/i, '');
+      }
+
+      function getEditorText() {
+        return editorEl.textContent.replace(/\u00A0/g, '');
+      }
+
+      function setEditorText(text) {
+        editorEl.textContent = text;
+        placeCaretAtEnd(editorEl);
+        scrollToBottom();
+      }
+
+      function placeCaretAtEnd(element) {
+        element.focus();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      function isCaretAtStart(element) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount || selection.anchorNode == null) return false;
+        const range = selection.getRangeAt(0).cloneRange();
+        range.selectNodeContents(element);
+        range.setEnd(selection.anchorNode, selection.anchorOffset);
+        return range.toString().length === 0;
+      }
+
+      function isCaretAtEnd(element) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount || selection.anchorNode == null) return false;
+        const range = selection.getRangeAt(0).cloneRange();
+        range.selectNodeContents(element);
+        range.setStart(selection.anchorNode, selection.anchorOffset);
+        return range.toString().length === 0;
+      }
+
+      function printPromptBlock(source) {
+        const lines = source.replace(/\s+$/g, '').split('\n');
+        lines.forEach((line, index) => {
+          const prefix = index === 0 ? '> ' : '. ';
+          addLine(prefix + line, 'line prompt');
+        });
+      }
+
+      function isLikelyExpression(code) {
+        const trimmed = code.trim();
+        if (!trimmed || trimmed.includes('\n')) return false;
+        if (/^(local|function|for|while|repeat|if|do|return|break|goto|until|end)\b/.test(trimmed)) return false;
+        if (/^--/.test(trimmed)) return false;
+        if (/[^><~=]=[^=]/.test(trimmed)) return false;
+        return true;
+      }
+
+      function showHelp() {
+        addLine('LuaEmu local commands:', 'line system');
+        addLine(':help   Show this help', 'line system');
+        addLine(':clear  Clear terminal output', 'line system');
+        addLine(':about  Show runtime information', 'line system');
+      }
+
+      function showAbout() {
+        addLine('LuaEmu browser runtime', 'line system');
+        addLine('Lua engine: Fengari (Lua 5.3 semantics)', 'line system');
+        addLine('State is preserved between commands in this session.', 'line system');
+      }
+
+      function handleLocalCommand(command) {
+        switch (command.trim()) {
+          case ':help':
+            showHelp();
+            return true;
+          case ':clear':
+            clearOutput();
+            addLine('Terminal cleared.', 'line system');
+            return true;
+          case ':about':
+            showAbout();
+            return true;
+          default:
+            return false;
+        }
+      }
+
+      function buildLuaPreamble() {
+        return `
+local js = require "js"
+local __luaemu_window = js.global
+_G.print = function(...)
+  local out = {}
+  for i = 1, select("#", ...) do
+    out[#out + 1] = tostring(select(i, ...))
+  end
+  __luaemu_window:__luaemu_emit(table.concat(out, "\t"))
+end
+`;
+      }
+
+      function executeLua(source) {
+        const code = source.trim();
+        if (!code) return;
+
+        if (!runtimeReady) {
+          addLine('Lua runtime is not ready yet.', 'line error');
+          return;
+        }
+
+        printPromptBlock(code);
+
+        if (handleLocalCommand(code)) {
+          return;
+        }
+
+        if (!history.length || history[history.length - 1] !== code) {
+          history.push(code);
+        }
+        historyIndex = history.length;
+
+        try {
+          const preamble = buildLuaPreamble();
+
+          if (isLikelyExpression(code)) {
+            let expression = null;
+            try {
+              expression = window.fengari.load(preamble + '\nreturn ' + code, '=(repl-expr)');
+            } catch {
+              expression = null;
+            }
+
+            if (expression) {
+              const result = expression();
+              const text = stringifyValue(result);
+              if (text !== null && text !== 'undefined') {
+                addLine(text, 'line result');
+              }
+              return;
+            }
+          }
+
+          const chunk = window.fengari.load(preamble + '\n' + code, '=(repl)');
+          const result = chunk();
+          const text = stringifyValue(result);
+          if (text !== null && text !== 'undefined') {
+            addLine(text, 'line result');
+          }
+        } catch (error) {
+          addLine(formatLuaError(error), 'line error');
+        }
+      }
+
+      function bootRuntime() {
+        setStatus(false, 'Loading Lua runtime...');
+        clearOutput();
+        window.__luaemu_emit = function(text) {
+          addLine(text, 'line');
+        };
+        try {
+          addLine('LuaEmu ready.', 'line system');
+          addLine('Try print(_VERSION), 2 + 3, or click a sample on the right.', 'line system');
+          setStatus(true, 'Lua runtime ready');
+        } catch (error) {
+          addLine('Initialization failed: ' + formatLuaError(error), 'line error');
+          setStatus(false, 'Runtime initialization failed');
+        }
+      }
+
+      function waitForFengari() {
+        let attempts = 0;
+        const maxAttempts = 120;
+        const timer = setInterval(() => {
+          attempts += 1;
+          if (window.fengari && typeof window.fengari.load === 'function') {
+            clearInterval(timer);
+            bootRuntime();
+            placeCaretAtEnd(editorEl);
+            return;
+          }
+          if (attempts >= maxAttempts) {
+            clearInterval(timer);
+            addLine('Failed to load the Lua library. Check network access to the CDN.', 'line error');
+            setStatus(false, 'Lua library load failed');
+          }
+        }, 100);
+      }
+
+      terminalEl.addEventListener('mousedown', (event) => {
+        if (!event.target.closest('.editor')) {
+          event.preventDefault();
+          placeCaretAtEnd(editorEl);
+        }
+      });
+
+      editorEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          const code = getEditorText();
+          setEditorText('');
+          executeLua(code);
+          return;
+        }
+
+        if (event.key === 'ArrowUp' && history.length && isCaretAtStart(editorEl)) {
+          event.preventDefault();
+          historyIndex = Math.max(0, historyIndex - 1);
+          setEditorText(history[historyIndex] ?? '');
+          return;
+        }
+
+        if (event.key === 'ArrowDown' && history.length && isCaretAtEnd(editorEl)) {
+          event.preventDefault();
+          historyIndex = Math.min(history.length, historyIndex + 1);
+          setEditorText(history[historyIndex] ?? '');
+        }
+      });
+
+      snippetEls.forEach((button) => {
+        button.addEventListener('click', async () => {
+          const code = button.dataset.code || '';
+          setEditorText(code);
+          placeCaretAtEnd(editorEl);
+          try {
+            await navigator.clipboard.writeText(code);
+          } catch {
+          }
+          addLine('Sample inserted into the prompt.', 'line system');
+        });
+      });
+
+      waitForFengari();
+    })();
+  </script>
+</body>
+</html>
